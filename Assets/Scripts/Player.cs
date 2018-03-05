@@ -3,10 +3,15 @@ using System.Collections;
 
 public class Player : MonoBehaviour {
 
+	//Public variables visible in the editor (Unity)
 	public string logText = "Hello World Again";
 	public float speed = 2;
     public float health = 10;
     public float jumpSpeed = 50;
+	public int allowedAirJumps = 0;
+
+	//Private variables not visible or accessible outside this script
+	private int numAirJumps = 0;
 
     // Use this for initialization
     void Start (){
@@ -36,7 +41,23 @@ public class Player : MonoBehaviour {
 
         bool touchingGround = collider.IsTouchingLayers(groundLayer);
 
-        //Debug.Log(horizontal);
+		//If we ar touching the cround,
+		// we can reset our air jumps to 0
+		if (touchingGround)
+			numAirJumps = 0;
+
+		//Normally we are only allowed to jump if we are touching the ground
+		bool allowedToJump = touchingGround;
+
+        //However if our allowed air jumps are
+		// higher than our current air jump count
+		//  (meaning we have at least 1 jump left)
+		// we are allowed to jump.
+		//Even if we aren't touching the ground
+		if (allowedAirJumps > numAirJumps) 
+		{
+			allowedToJump = true;
+		}
 
         //Cache a local copy of our rigidbody's velocity
         Vector2 velocity = rigidbody.velocity;
@@ -44,10 +65,16 @@ public class Player : MonoBehaviour {
         //Set the x(left/right) component of the velocity on our input
         velocity.x = horizontal * speed;
 
+
+
         //Set the y (up/down) component of the velocioty based on jump
-        if(jump == true && touchingGround == true)
+        if(jump == true && allowedToJump == true)
         {
             velocity.y = jumpSpeed;
+
+			if (touchingGround != true) {// or touchingGround == false
+				numAirJumps = numAirJumps + 1;
+			}
 
         }
 
